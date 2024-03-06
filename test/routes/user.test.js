@@ -14,8 +14,20 @@ test('Deve listar todos os usuários', async () => {
 test('Deve inserir usuário com sucesso', async () => {
     const res = await request(app).post('/users').send({name:'Walter Mitral', mail, passwd:'123456'})
     expect(res.status).toBe(201)
-    expect(res.body.name).toBe('Walter Mitral');    
+    expect(res.body.name).toBe('Walter Mitral')
+    expect(res.body).not.toHaveProperty('passwd')    
 })
+
+test('Deve armazenar uma senha criptografada', async () => {
+    const res = await request(app).post('/users')
+        .send({name:'Walter Mitral', mail: `${Date.now()}@mail.com`, passwd:'123456'})
+    expect(res.status).toBe(201)
+    const { id } = res.body
+    const userDB = await app.services.user.findOne({ id })
+    expect(userDB.passwd).not.toBeUndefined()
+    expect(userDB.passwd).not.toBe('123456')
+
+}) 
 
 test('Não deve inserir usuário sem nome', async () => {
     const res = await request(app).post('/users')
@@ -43,3 +55,4 @@ test('Não deve inserir usuário com email já existente', async () =>{
     expect(res.status).toBe(400)
     expect(res.body.error).toBe('Já existe um usuário com esse email')    
 })
+
