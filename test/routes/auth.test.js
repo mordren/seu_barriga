@@ -2,6 +2,18 @@ const request = require('supertest');
 
 const app = require('../../src/app')
 
+
+test('Deve criar um usuário via signup', () =>{
+    return request(app).post('/auth/signup')
+        .send({name:'Walter Mitral', mail: `${Date.now()}@mail.com`, passwd:'123456'})
+        .then((res) => {
+            expect(res.status).toBe(201)
+            expect(res.body.name).toBe('Walter Mitral')
+            expect(res.body).toHaveProperty('mail')
+            expect(res.body).not.toHaveProperty('passwd')
+        })
+})
+
 test('O usuário deve receber um token ao logar', () => {
     const mail = `${Date.now()}@mail.com`
     return app.services.user.save(
@@ -36,7 +48,7 @@ test('Não deve autenticar usuário inexistente', () => {
 })
 
 test('Não deve ser possível acessar uma rota sem token', () =>{
-    return request(app).get('/users')
+    return request(app).get('/v1/users')
         .then((res) => {
             expect(res.status).toBe(401)
         })

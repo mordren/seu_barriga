@@ -9,10 +9,11 @@ const { TextEncoder, TextDecoder, isBuffer } = require("util");
 app.db = knex(knexfile.test);
 
 consign({cwd: 'src', verbose: false})
+    .include('./config/passport.js')
     .include('./config/middlewares.js')
     .then('./services')
     .then('./routes')
-    .then('./config/routes.js')
+    .then('./config/router.js')
     .into(app)
 
 app.get('/', (req, res) => {
@@ -21,7 +22,11 @@ app.get('/', (req, res) => {
 
 app.use((err, req, res, next) =>{
     const { name, message, stack } = err;
+    //quando quiser ver um erro aqui vai ser prinntado:
+    console.log(err)
     if (name === 'ValidationError') res.status(400).json({ error: message });
+    if (name === 'RecursoIndevidoError') res.status(403).json({ error: message });
+    
     else res.status(500).json({name, message, stack})
     next(err)
 })
